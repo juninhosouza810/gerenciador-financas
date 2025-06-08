@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Finanças Pessoais</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+            transition: transform 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .summary-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .summary-card .value {
+            font-size: 2.2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .form-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .form-card h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .transactions {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .transactions h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .transaction-info {
+            flex: 1;
+        }
+
+        .transaction-description {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .transaction-category {
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .transaction-value {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .transaction-value.receita {
+            color: #28a745;
+        }
+
+        .transaction-value.despesa {
+            color: #dc3545;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e0e0e0;
+        }
+
+        .chart-container h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.4em;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .category-chart {
+            display: grid;
+            gap: 15px;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .category-bar {
+            flex: 1;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            margin: 0 15px;
+            overflow: hidden;
+        }
+
+        .category-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        @media (max-width: 768px) {
+            .form-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-danger {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Gerenciador de Finanças Pessoais</h1>
+            <p>Controle suas receitas e despesas de forma inteligente</p>
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>💵 Total de Receitas</h3>
+                <div class="value" id="totalReceitas">R$ 0,00</div>
+            </div>
+            <div class="summary-card">
+                <h3>💸 Total de Despesas</h3>
+                <div class="value" id="totalDespesas">R$ 0,00</div>
+            </div>
+            <div class="summary-card">
+                <h3>💎 Saldo</h3>
+                <div class="value" id="saldo">R$ 0,00</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <div class="form-card">
+                <h3>➕ Adicionar Receita</h3>
+                <form id="formReceita">
+                    <div class="form-group">
+                        <label for="descricaoReceita">Descrição:</label>
+                        <input type="text" id="descricaoReceita" required placeholder="Ex: Salário, Freelance...">
+                    </div>
+                    <div class="form-group">
+                        <label for="valorReceita">Valor (R$):</label>
+                        <input type="number" id="valorReceita" step="0.01" required placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label for="categoriaReceita">Categoria:</label>
+                        <select id="categoriaReceita" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option value="Salário">Salário</option>
+                            <option value="Freelance">Freelance</option>
+                            <option value="Investimentos">Investimentos</option>
+                            <option value="Vendas">Vendas</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Adicionar Receita</button>
+                </form>
+            </div>
+
+            <div class="form-card">
+                <h3>➖ Adicionar Despesa</h3>
+                <form id="formDespesa">
+                    <div class="form-group">
+                        <label for="descricaoDespesa">Descrição:</label>
+                        <input type="text" id="descricaoDespesa" required placeholder="Ex: Mercado, Combustível...">
+                    </div>
+                    <div class="form-group">
+                        <label for="valorDespesa">Valor (R$):</label>
+                        <input type="number" id="valorDespesa" step="0.01" required placeholder="0,00">
+                    </div>
+                    <div class="form-group">
+                        <label for="categoriaDespesa">Categoria:</label>
+                        <select id="categoriaDespesa" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option value="Alimentação">Alimentação</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Moradia">Moradia</option>
+                            <option value="Saúde">Saúde</option>
+                            <option value="Lazer">Lazer</option>
+                            <option value="Educação">Educação</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Impostos">Impostos</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn">Adicionar Despesa</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="transactions">
+            <h3>📊 Histórico de Transações</h3>
+            <div id="listaTransacoes">
+                <p style="text-align: center; color: #666; padding: 20px;">Nenhuma transação cadastrada ainda.</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>📈 Gastos por Categoria</h3>
+            <div id="graficoCategoria" class="category-chart">
+                <p style="text-align: center; color: #666; padding: 20px;">Adicione algumas despesas para ver o gráfico.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class GerenciadorFinancas {
+            constructor() {
+                this.transacoes = this.carregarDados();
+                this.inicializar();
+            }
+
+            inicializar() {
+                this.configurarEventos();
+                this.atualizarInterface();
+            }
+
+            configurarEventos() {
+                document.getElementById('formReceita').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.adicionarReceita();
+                });
+
+                document.getElementById('formDespesa').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.adicionarDespesa();
+                });
+            }
+
+            adicionarReceita() {
+                const descricao = document.getElementById('descricaoReceita').value;
+                const valor = parseFloat(document.getElementById('valorReceita').value);
+                const categoria = document.getElementById('categoriaReceita').value;
+
+                if (descricao && valor && categoria) {
+                    const transacao = {
+                        id: Date.now(),
+                        tipo: 'receita',
+                        descricao,
+                        valor,
+                        categoria,
+                        data: new Date().toLocaleDateString('pt-BR')
+                    };
+
+                    this.transacoes.push(transacao);
+                    this.salvarDados();
+                    this.atualizarInterface();
+                    this.limparFormulario('formReceita');
+                    this.mostrarAlerta('Receita adicionada com sucesso!', 'success');
+                }
+            }
+
+            adicionarDespesa() {
+                const descricao = document.getElementById('descricaoDespesa').value;
+                const valor = parseFloat(document.getElementById('valorDespesa').value);
+                const categoria = document.getElementById('categoriaDespesa').value;
+
+                if (descricao && valor && categoria) {
+                    const transacao = {
+                        id: Date.now(),
+                        tipo: 'despesa',
+                        descricao,
+                        valor,
+                        categoria,
+                        data: new Date().toLocaleDateString('pt-BR')
+                    };
+
+                    this.transacoes.push(transacao);
+                    this.salvarDados();
+                    this.atualizarInterface();
+                    this.limparFormulario('formDespesa');
+                    this.mostrarAlerta('Despesa adicionada com sucesso!', 'success');
+                }
+            }
+
+            excluirTransacao(id) {
+                this.transacoes = this.transacoes.filter(t => t.id !== id);
+                this.salvarDados();
+                this.atualizarInterface();
+                this.mostrarAlerta('Transação excluída com sucesso!', 'success');
+            }
+
+            atualizarInterface() {
+                this.atualizarResumo();
+                this.atualizarListaTransacoes();
+                this.atualizarGraficoCategoria();
+            }
+
+            atualizarResumo() {
+                const receitas = this.transacoes
+                    .filter(t => t.tipo === 'receita')
+                    .reduce((sum, t) => sum + t.valor, 0);
+
+                const despesas = this.transacoes
+                    .filter(t => t.tipo === 'despesa')
+                    .reduce((sum, t) => sum + t.valor, 0);
+
+                const saldo = receitas - despesas;
+
+                document.getElementById('totalReceitas').textContent = this.formatarMoeda(receitas);
+                document.getElementById('totalDespesas').textContent = this.formatarMoeda(despesas);
+                document.getElementById('saldo').textContent = this.formatarMoeda(saldo);
+
+                // Aplicar cor ao saldo
+                const saldoElement = document.getElementById('saldo');
+                saldoElement.style.color = saldo >= 0 ? '#28a745' : '#dc3545';
+            }
+
+            atualizarListaTransacoes() {
+                const lista = document.getElementById('listaTransacoes');
+                
+                if (this.transacoes.length === 0) {
+                    lista.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Nenhuma transação cadastrada ainda.</p>';
+                    return;
+                }
+
+                const transacoesOrdenadas = [...this.transacoes].reverse();
+                
+                lista.innerHTML = transacoesOrdenadas.map(transacao => `
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <div class="transaction-description">${transacao.descricao}</div>
+                            <div class="transaction-category">${transacao.categoria} • ${transacao.data}</div>
+                        </div>
+                        <div class="transaction-value ${transacao.tipo}">
+                            ${transacao.tipo === 'receita' ? '+' : '-'} ${this.formatarMoeda(transacao.valor)}
+                        </div>
+                        <button class="delete-btn" onclick="gerenciador.excluirTransacao(${transacao.id})">
+                            🗑️
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            atualizarGraficoCategoria() {
+                const grafico = document.getElementById('graficoCategoria');
+                const despesas = this.transacoes.filter(t => t.tipo === 'despesa');
+
+                if (despesas.length === 0) {
+                    grafico.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">Adicione algumas despesas para ver o gráfico.</p>';
+                    return;
+                }
+
+                const categorias = {};
+                despesas.forEach(despesa => {
+                    categorias[despesa.categoria] = (categorias[despesa.categoria] || 0) + despesa.valor;
+                });
+
+                const totalDespesas = Object.values(categorias).reduce((sum, valor) => sum + valor, 0);
+
+                grafico.innerHTML = Object.entries(categorias)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([categoria, valor]) => {
+                        const percentual = (valor / totalDespesas) * 100;
+                        return `
+                            <div class="category-item">
+                                <span style="font-weight: 500; min-width: 100px;">${categoria}</span>
+                                <div class="category-bar">
+                                    <div class="category-fill" style="width: ${percentual}%"></div>
+                                </div>
+                                <span style="font-weight: bold; min-width: 80px; text-align: right;">${this.formatarMoeda(valor)}</span>
+                            </div>
+                        `;
+                    }).join('');
+            }
+
+            formatarMoeda(valor) {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(valor);
+            }
+
+            limparFormulario(formId) {
+                document.getElementById(formId).reset();
+            }
+
+            mostrarAlerta(mensagem, tipo) {
+                const alerta = document.createElement('div');
+                alerta.className = `alert alert-${tipo}`;
+                alerta.textContent = mensagem;
+                
+                const container = document.querySelector('.container');
+                container.insertBefore(alerta, container.firstChild.nextSibling);
+
+                setTimeout(() => {
+                    alerta.remove();
+                }, 3000);
+            }
+
+            salvarDados() {
+                // Simulação de salvamento - em ambiente real, salvar no localStorage
+                console.log('Dados salvos:', this.transacoes);
+            }
+
+            carregarDados() {
+                // Simulação de carregamento - em ambiente real, carregar do localStorage
+                return [];
+            }
+        }
+
+        // Inicializar o gerenciador
+        const gerenciador = new GerenciadorFinancas();
+    </script>
+</body>
+</html>
