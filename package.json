@@ -1,0 +1,14 @@
+{
+  "name": "gerenciador-financas-pessoais",
+  "version": "1.0.0",
+  "description": "Sistema para controle de finanças pessoais",
+  "main": "index.html",
+  "scripts": {
+    "dev": "npx serve .",
+    "build": "echo 'Build complete'",
+    "start": "npx serve ."
+  },
+  "keywords": ["finanças", "controle", "dinheiro"],
+  "author": "Seu Nome",
+  "license": "MIT"
+}
