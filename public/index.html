@@ -310,6 +310,19 @@
         <div class="header">
             <h1>💰 Gerenciador de Finanças Pessoais</h1>
             <p>Controle suas receitas e despesas de forma inteligente</p>
+            
+            <!-- Botões de Debug -->
+            <div style="margin-top: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                <button onclick="gerenciador.testarLocalStorage()" style="background: #28a745; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                    🔧 Testar Storage
+                </button>
+                <button onclick="gerenciador.limparDados()" style="background: #dc3545; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                    🗑️ Limpar Dados
+                </button>
+                <button onclick="gerenciador.exportarDados()" style="background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+                    📁 Exportar Dados
+                </button>
+            </div>
         </div>
 
         <div class="summary">
@@ -586,13 +599,114 @@
             }
 
             salvarDados() {
-                // Simulação de salvamento - em ambiente real, salvar no localStorage
-                console.log('Dados salvos:', this.transacoes);
+                try {
+                    // Verificar se localStorage está disponível
+                    if (typeof(Storage) !== "undefined" && localStorage) {
+                        localStorage.setItem('financas_transacoes', JSON.stringify(this.transacoes));
+                        console.log('✅ Dados salvos no localStorage:', this.transacoes.length, 'transações');
+                        this.mostrarAlerta('Dados salvos com sucesso!', 'success');
+                    } else {
+                        console.warn('⚠️ localStorage não disponível - dados em memória apenas');
+                        this.mostrarAlerta('Aviso: Dados salvos apenas na sessão atual', 'danger');
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao salvar dados:', error);
+                    this.mostrarAlerta('Erro ao salvar dados: ' + error.message, 'danger');
+                }
             }
 
             carregarDados() {
-                // Simulação de carregamento - em ambiente real, carregar do localStorage
-                return [];
+                try {
+                    // Verificar se localStorage está disponível
+                    if (typeof(Storage) !== "undefined" && localStorage) {
+                        const dados = localStorage.getItem('financas_transacoes');
+                        const transacoes = dados ? JSON.parse(dados) : [];
+                        console.log('✅ Dados carregados do localStorage:', transacoes.length, 'transações');
+                        
+                        // Mostrar mensagem se encontrou dados salvos
+                        if (transacoes.length > 0) {
+                            setTimeout(() => {
+                                this.mostrarAlerta(`${transacoes.length} transações carregadas!`, 'success');
+                            }, 1000);
+                        }
+                        
+                        return transacoes;
+                    } else {
+                        console.warn('⚠️ localStorage não disponível');
+                        return [];
+                    }
+                } catch (error) {
+                    console.error('❌ Erro ao carregar dados:', error);
+                    return [];
+                }
+            }
+
+            // Métodos de Debug e Utilitários
+            testarLocalStorage() {
+                console.log('🔧 Testando localStorage...');
+                
+                // Verificar suporte
+                if (typeof(Storage) === "undefined") {
+                    this.mostrarAlerta('❌ Seu navegador não suporta localStorage', 'danger');
+                    return;
+                }
+                
+                try {
+                    // Teste de escrita
+                    localStorage.setItem('teste', 'ok');
+                    const teste = localStorage.getItem('teste');
+                    localStorage.removeItem('teste');
+                    
+                    if (teste === 'ok') {
+                        this.mostrarAlerta('✅ localStorage funcionando perfeitamente!', 'success');
+                        console.log('✅ localStorage: OK');
+                        console.log('📊 Transações atuais:', this.transacoes.length);
+                        console.log('💾 Dados salvos:', localStorage.getItem('financas_transacoes'));
+                    } else {
+                        this.mostrarAlerta('❌ Problema no localStorage', 'danger');
+                    }
+                } catch (error) {
+                    this.mostrarAlerta('❌ Erro no localStorage: ' + error.message, 'danger');
+                    console.error('❌ Erro localStorage:', error);
+                }
+            }
+
+            limparDados() {
+                if (confirm('⚠️ Tem certeza que deseja limpar TODOS os dados? Esta ação não pode ser desfeita!')) {
+                    try {
+                        localStorage.removeItem('financas_transacoes');
+                        this.transacoes = [];
+                        this.atualizarInterface();
+                        this.mostrarAlerta('🗑️ Todos os dados foram limpos!', 'success');
+                        console.log('🗑️ Dados limpos');
+                    } catch (error) {
+                        this.mostrarAlerta('❌ Erro ao limpar dados: ' + error.message, 'danger');
+                    }
+                }
+            }
+
+            exportarDados() {
+                try {
+                    const dados = {
+                        transacoes: this.transacoes,
+                        exportado_em: new Date().toISOString(),
+                        total_transacoes: this.transacoes.length
+                    };
+                    
+                    const json = JSON.stringify(dados, null, 2);
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `financas_backup_${new Date().toISOString().slice(0,10)}.json`;
+                    a.click();
+                    
+                    URL.revokeObjectURL(url);
+                    this.mostrarAlerta('📁 Dados exportados com sucesso!', 'success');
+                } catch (error) {
+                    this.mostrarAlerta('❌ Erro ao exportar: ' + error.message, 'danger');
+                }
             }
         }
 
